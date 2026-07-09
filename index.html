@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>管工事1級 学科試験 一問一答</title>
+<meta name="description" content="1級管工事施工管理技士 学科試験対策。○×形式の一問一答で388問を演習できます。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="blueprint-grid" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="topbar__title">
+    <span class="topbar__eyebrow">1級管工事施工管理技士</span>
+    <h1>学科試験 一問一答</h1>
+  </div>
+  <div class="gauge" id="gauge" role="img" aria-label="正答率ゲージ">
+    <svg viewBox="0 0 120 72" class="gauge__svg">
+      <path d="M10,66 A50,50 0 0 1 110,66" class="gauge__track"/>
+      <path d="M10,66 A50,50 0 0 1 110,66" class="gauge__fill" id="gaugeFill"/>
+      <line x1="60" y1="66" x2="60" y2="24" class="gauge__needle" id="gaugeNeedle"/>
+      <circle cx="60" cy="66" r="4" class="gauge__hub"/>
+    </svg>
+    <div class="gauge__reading">
+      <span class="gauge__pct" id="gaugePct">0%</span>
+      <span class="gauge__label">正答率</span>
+    </div>
+  </div>
+</header>
+
+<div class="ad-slot ad-slot--top" id="ad-top">
+  <span class="ad-slot__tag">広告枠 / 300x100</span>
+</div>
+
+<main class="stage">
+
+  <div class="progress-rail" aria-hidden="true">
+    <div class="progress-rail__fill" id="progressFill"></div>
+  </div>
+  <div class="progress-text" id="progressText">問題 1 / 388</div>
+
+  <section class="card" id="quizCard">
+    <div class="card__tag" id="questionTag">Q-001</div>
+    <p class="card__question" id="questionText">読み込み中...</p>
+
+    <div class="answer-row" id="answerRow">
+      <button class="answer-btn answer-btn--true" id="btnTrue" data-value="true">
+        <span class="answer-btn__mark">○</span>
+        <span class="answer-btn__label">正しい</span>
+      </button>
+      <button class="answer-btn answer-btn--false" id="btnFalse" data-value="false">
+        <span class="answer-btn__mark">×</span>
+        <span class="answer-btn__label">誤り</span>
+      </button>
+    </div>
+
+    <div class="result" id="result" hidden>
+      <div class="result__banner" id="resultBanner"></div>
+      <p class="result__exp" id="resultExp"></p>
+      <button class="next-btn" id="btnNext">次の問題 →</button>
+    </div>
+  </section>
+
+  <div class="card card--summary" id="summaryCard" hidden>
+    <p class="card__tag">RESULT</p>
+    <h2>お疲れさまでした</h2>
+    <p class="summary__score"><span id="summaryCorrect">0</span> / <span id="summaryTotal">388</span> 問正解</p>
+    <p class="summary__rate" id="summaryRate">正答率 0%</p>
+    <div class="summary__actions">
+      <button class="next-btn" id="btnRestart">最初からやり直す</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="text-btn" id="btnReset">進捗をリセット</button>
+  </div>
+
+</main>
+
+<div class="ad-slot ad-slot--bottom" id="ad-bottom">
+  <span class="ad-slot__tag">広告枠 / 320x50</span>
+</div>
+
+<footer class="footer">
+  <p>全388問・○×形式 ／ 学習の進み具合はこの端末に自動保存されます</p>
+</footer>
+
+<script src="js/questions.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

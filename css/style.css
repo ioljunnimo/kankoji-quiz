@@ -53,6 +53,7 @@ body {
     linear-gradient(90deg, var(--grid-cyan-strong) 1px, transparent 1px);
   background-size: 18px 18px, 18px 18px, 90px 90px, 90px 90px;
   background-position: -1px -1px;
+  opacity: 0.5;
   pointer-events: none;
 }
 
@@ -335,14 +336,14 @@ body {
 .text-btn {
   background: none;
   border: none;
-  color: rgba(238,244,248,0.4);
+  color: rgba(238,244,248,0.65);
   font-family: var(--font-mono);
   font-size: 12px;
   cursor: pointer;
   text-decoration: underline;
 }
-.text-btn:hover { color: rgba(238,244,248,0.7); }
-.text-btn:disabled { cursor: default; opacity: 0.4; text-decoration: none; }
+.text-btn:hover { color: rgba(238,244,248,0.9); }
+.text-btn:disabled { cursor: default; opacity: 0.45; text-decoration: none; }
 .card--summary .text-btn { color: var(--ink-soft); }
 .card--summary .text-btn:hover { color: var(--ink); }
 .card--summary .text-btn:disabled { color: rgba(61,91,116,0.4); }

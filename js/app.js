@@ -80,8 +80,12 @@
     savepointCurrent: document.getElementById("savepointCurrent"),
     btnSaveHere: document.getElementById("btnSaveHere"),
     btnClearSavepoint: document.getElementById("btnClearSavepoint"),
-    saveToast: document.getElementById("saveToast")
+    saveToast: document.getElementById("saveToast"),
+    footerText: document.getElementById("footerText")
   };
+
+  els.savepointInterval.max = TOTAL;
+  els.footerText.textContent = "全" + TOTAL + "問・○×形式 ／ 学習の進み具合はこの端末に自動保存されます";
 
   var gaugeLen = els.gaugeFill.getTotalLength ? els.gaugeFill.getTotalLength() : 157;
   els.gaugeFill.style.strokeDasharray = gaugeLen;

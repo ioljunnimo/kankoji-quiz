@@ -93,6 +93,13 @@
   </div>
 
   <div class="controls" id="mainControls">
+    <div class="savepoint">
+      <span class="savepoint__label">セーブポイント：問題</span>
+      <input type="number" id="savepointInput" class="savepoint__input" min="1" max="388" placeholder="-">
+      <span class="savepoint__label">/ 388</span>
+      <button class="text-btn" id="btnSaveHere">今の問題を保存</button>
+      <button class="text-btn" id="btnClearSavepoint">解除</button>
+    </div>
     <button class="text-btn" id="btnReviewWrong">間違えた問題だけ復習する（<span id="wrongCount">0</span>問）</button>
     <button class="text-btn" id="btnReset">進捗をリセット</button>
   </div>

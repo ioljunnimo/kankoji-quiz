@@ -15,7 +15,8 @@
     finished: false,
     mode: "normal",    // "normal" | "review"
     reviewQueue: [],   // ids of wrong-answered questions, snapshot at review start
-    reviewIndex: 0
+    reviewIndex: 0,
+    savePoint: null    // 1-indexed question number, or null if unset
   };
 
   function loadState() {
@@ -28,6 +29,7 @@
         if (state.mode !== "review") state.mode = "normal";
         if (!Array.isArray(state.reviewQueue)) state.reviewQueue = [];
         if (typeof state.reviewIndex !== "number") state.reviewIndex = 0;
+        if (typeof state.savePoint !== "number") state.savePoint = null;
       }
     } catch (e) { /* ignore corrupt storage */ }
   }
@@ -71,7 +73,10 @@
     reviewSummaryCard: document.getElementById("reviewSummaryCard"),
     reviewSummaryText: document.getElementById("reviewSummaryText"),
     btnReviewAgain: document.getElementById("btnReviewAgain"),
-    btnExitReviewFromSummary: document.getElementById("btnExitReviewFromSummary")
+    btnExitReviewFromSummary: document.getElementById("btnExitReviewFromSummary"),
+    savepointInput: document.getElementById("savepointInput"),
+    btnSaveHere: document.getElementById("btnSaveHere"),
+    btnClearSavepoint: document.getElementById("btnClearSavepoint")
   };
 
   var gaugeLen = els.gaugeFill.getTotalLength ? els.gaugeFill.getTotalLength() : 157;
@@ -101,6 +106,32 @@
     els.summaryWrongCount.textContent = n;
     els.btnReviewWrong.disabled = n === 0;
     els.btnReviewFromSummary.disabled = n === 0;
+  }
+
+  function updateSavepointUI() {
+    els.savepointInput.value = typeof state.savePoint === "number" ? state.savePoint : "";
+  }
+
+  function setSavepoint(value) {
+    if (!value || value < 1) {
+      state.savePoint = null;
+    } else {
+      state.savePoint = Math.min(Math.max(Math.round(value), 1), TOTAL);
+    }
+    saveState();
+    updateSavepointUI();
+  }
+
+  function maybePromptSavepoint() {
+    if (state.mode !== "normal") return;
+    if (typeof state.savePoint !== "number") return;
+    if (state.savePoint < 1 || state.savePoint > TOTAL) return;
+    var target = state.savePoint;
+    if (confirm("セーブポイント（問題 " + target + "）から始めますか？")) {
+      state.index = target - 1;
+      state.finished = false;
+      saveState();
+    }
   }
 
   function currentQuestion() {
@@ -246,13 +277,15 @@
 
   function restart() {
     if (!confirm("最初から解き直します。よろしいですか？")) return;
+    var keepSavePoint = state.savePoint;
     state = {
       index: 0, correct: 0, answered: 0, answeredIds: {}, finished: false,
-      mode: "normal", reviewQueue: [], reviewIndex: 0
+      mode: "normal", reviewQueue: [], reviewIndex: 0, savePoint: keepSavePoint
     };
     saveState();
     updateGauge();
     updateReviewButtons();
+    updateSavepointUI();
     renderQuestion();
   }
 
@@ -266,9 +299,21 @@
   els.btnReviewAgain.addEventListener("click", startReview);
   els.btnExitReview.addEventListener("click", exitReview);
   els.btnExitReviewFromSummary.addEventListener("click", exitReview);
+  els.btnSaveHere.addEventListener("click", function () {
+    if (state.mode === "review") return;
+    setSavepoint(state.index + 1);
+  });
+  els.btnClearSavepoint.addEventListener("click", function () {
+    setSavepoint(null);
+  });
+  els.savepointInput.addEventListener("change", function () {
+    setSavepoint(parseInt(els.savepointInput.value, 10));
+  });
 
   loadState();
+  maybePromptSavepoint();
   updateGauge();
   updateReviewButtons();
+  updateSavepointUI();
   renderQuestion();
 })();

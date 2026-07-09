@@ -16,7 +16,8 @@
     mode: "normal",    // "normal" | "review"
     reviewQueue: [],   // ids of wrong-answered questions, snapshot at review start
     reviewIndex: 0,
-    savePoint: null    // 1-indexed question number, or null if unset
+    savePoint: null,    // 1-indexed question number of the last saved checkpoint, or null if unset
+    saveInterval: null  // auto-save every N questions (e.g. 10 -> saves at Q10, Q20, Q30...), or null if off
   };
 
   function loadState() {
@@ -30,6 +31,7 @@
         if (!Array.isArray(state.reviewQueue)) state.reviewQueue = [];
         if (typeof state.reviewIndex !== "number") state.reviewIndex = 0;
         if (typeof state.savePoint !== "number") state.savePoint = null;
+        if (typeof state.saveInterval !== "number") state.saveInterval = null;
       }
     } catch (e) { /* ignore corrupt storage */ }
   }
@@ -74,9 +76,11 @@
     reviewSummaryText: document.getElementById("reviewSummaryText"),
     btnReviewAgain: document.getElementById("btnReviewAgain"),
     btnExitReviewFromSummary: document.getElementById("btnExitReviewFromSummary"),
-    savepointInput: document.getElementById("savepointInput"),
+    savepointInterval: document.getElementById("savepointInterval"),
+    savepointCurrent: document.getElementById("savepointCurrent"),
     btnSaveHere: document.getElementById("btnSaveHere"),
-    btnClearSavepoint: document.getElementById("btnClearSavepoint")
+    btnClearSavepoint: document.getElementById("btnClearSavepoint"),
+    saveToast: document.getElementById("saveToast")
   };
 
   var gaugeLen = els.gaugeFill.getTotalLength ? els.gaugeFill.getTotalLength() : 157;
@@ -108,11 +112,39 @@
     els.btnReviewFromSummary.disabled = n === 0;
   }
 
-  function updateSavepointUI() {
-    els.savepointInput.value = typeof state.savePoint === "number" ? state.savePoint : "";
+  var toastTimer = null;
+  function showToast(msg) {
+    els.saveToast.textContent = msg;
+    els.saveToast.classList.add("toast--visible");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      els.saveToast.classList.remove("toast--visible");
+    }, 2400);
   }
 
-  function setSavepoint(value) {
+  function updateSavepointUI() {
+    els.savepointInterval.value = typeof state.saveInterval === "number" ? state.saveInterval : "";
+    if (typeof state.savePoint === "number") {
+      els.savepointCurrent.hidden = false;
+      els.savepointCurrent.textContent = "現在のセーブポイント：問題 " + state.savePoint;
+    } else {
+      els.savepointCurrent.hidden = true;
+      els.savepointCurrent.textContent = "";
+    }
+  }
+
+  function setSaveInterval(value) {
+    if (!value || value < 1) {
+      state.saveInterval = null;
+    } else {
+      state.saveInterval = Math.min(Math.max(Math.round(value), 1), TOTAL);
+    }
+    saveState();
+    updateSavepointUI();
+  }
+
+  function setSavepoint(value, opts) {
+    opts = opts || {};
     if (!value || value < 1) {
       state.savePoint = null;
     } else {
@@ -120,6 +152,17 @@
     }
     saveState();
     updateSavepointUI();
+    if (opts.notify && state.savePoint) {
+      showToast((opts.auto ? "自動セーブしました：問題 " : "セーブしました：問題 ") + state.savePoint);
+    }
+  }
+
+  function maybeAutoSave() {
+    if (typeof state.saveInterval !== "number" || state.saveInterval < 1) return;
+    var completed = state.index;
+    if (completed > 0 && completed % state.saveInterval === 0) {
+      setSavepoint(completed, { notify: true, auto: true });
+    }
   }
 
   function maybePromptSavepoint() {
@@ -226,6 +269,7 @@
     } else {
       state.index += 1;
       if (state.index >= TOTAL) state.finished = true;
+      maybeAutoSave();
     }
     saveState();
     renderQuestion();
@@ -278,9 +322,11 @@
   function restart() {
     if (!confirm("最初から解き直します。よろしいですか？")) return;
     var keepSavePoint = state.savePoint;
+    var keepSaveInterval = state.saveInterval;
     state = {
       index: 0, correct: 0, answered: 0, answeredIds: {}, finished: false,
-      mode: "normal", reviewQueue: [], reviewIndex: 0, savePoint: keepSavePoint
+      mode: "normal", reviewQueue: [], reviewIndex: 0,
+      savePoint: keepSavePoint, saveInterval: keepSaveInterval
     };
     saveState();
     updateGauge();
@@ -301,13 +347,16 @@
   els.btnExitReviewFromSummary.addEventListener("click", exitReview);
   els.btnSaveHere.addEventListener("click", function () {
     if (state.mode === "review") return;
-    setSavepoint(state.index + 1);
+    setSavepoint(state.index + 1, { notify: true, auto: false });
   });
   els.btnClearSavepoint.addEventListener("click", function () {
-    setSavepoint(null);
+    state.saveInterval = null;
+    state.savePoint = null;
+    saveState();
+    updateSavepointUI();
   });
-  els.savepointInput.addEventListener("change", function () {
-    setSavepoint(parseInt(els.savepointInput.value, 10));
+  els.savepointInterval.addEventListener("change", function () {
+    setSaveInterval(parseInt(els.savepointInterval.value, 10));
   });
 
   loadState();

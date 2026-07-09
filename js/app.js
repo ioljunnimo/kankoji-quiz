@@ -4,12 +4,18 @@
   var STORAGE_KEY = "kankoji1_quiz_progress_v1";
   var TOTAL = QUESTIONS.length;
 
+  var QUESTIONS_BY_ID = {};
+  QUESTIONS.forEach(function (q) { QUESTIONS_BY_ID[q.id] = q; });
+
   var state = {
     index: 0,
     correct: 0,
     answered: 0,
     answeredIds: {},   // id -> {picked, correct}
-    finished: false
+    finished: false,
+    mode: "normal",    // "normal" | "review"
+    reviewQueue: [],   // ids of wrong-answered questions, snapshot at review start
+    reviewIndex: 0
   };
 
   function loadState() {
@@ -19,6 +25,9 @@
       var saved = JSON.parse(raw);
       if (saved && typeof saved.index === "number") {
         state = saved;
+        if (state.mode !== "review") state.mode = "normal";
+        if (!Array.isArray(state.reviewQueue)) state.reviewQueue = [];
+        if (typeof state.reviewIndex !== "number") state.reviewIndex = 0;
       }
     } catch (e) { /* ignore corrupt storage */ }
   }
@@ -51,7 +60,18 @@
     btnReset: document.getElementById("btnReset"),
     gaugeFill: document.getElementById("gaugeFill"),
     gaugeNeedle: document.getElementById("gaugeNeedle"),
-    gaugePct: document.getElementById("gaugePct")
+    gaugePct: document.getElementById("gaugePct"),
+    modeBanner: document.getElementById("modeBanner"),
+    btnExitReview: document.getElementById("btnExitReview"),
+    mainControls: document.getElementById("mainControls"),
+    btnReviewWrong: document.getElementById("btnReviewWrong"),
+    wrongCount: document.getElementById("wrongCount"),
+    btnReviewFromSummary: document.getElementById("btnReviewFromSummary"),
+    summaryWrongCount: document.getElementById("summaryWrongCount"),
+    reviewSummaryCard: document.getElementById("reviewSummaryCard"),
+    reviewSummaryText: document.getElementById("reviewSummaryText"),
+    btnReviewAgain: document.getElementById("btnReviewAgain"),
+    btnExitReviewFromSummary: document.getElementById("btnExitReviewFromSummary")
   };
 
   var gaugeLen = els.gaugeFill.getTotalLength ? els.gaugeFill.getTotalLength() : 157;
@@ -67,18 +87,67 @@
     els.gaugePct.textContent = Math.round(rate * 100) + "%";
   }
 
+  function countWrong() {
+    var n = 0;
+    for (var id in state.answeredIds) {
+      if (state.answeredIds.hasOwnProperty(id) && !state.answeredIds[id].correct) n++;
+    }
+    return n;
+  }
+
+  function updateReviewButtons() {
+    var n = countWrong();
+    els.wrongCount.textContent = n;
+    els.summaryWrongCount.textContent = n;
+    els.btnReviewWrong.disabled = n === 0;
+    els.btnReviewFromSummary.disabled = n === 0;
+  }
+
+  function currentQuestion() {
+    if (state.mode === "review") {
+      return QUESTIONS_BY_ID[state.reviewQueue[state.reviewIndex]];
+    }
+    return QUESTIONS[state.index];
+  }
+
   function updateProgress() {
+    if (state.mode === "review") {
+      els.progressText.textContent = "復習 " + (state.reviewIndex + 1) + " / " + state.reviewQueue.length;
+      els.progressFill.style.width = (state.reviewIndex / state.reviewQueue.length * 100) + "%";
+      return;
+    }
     var shown = Math.min(state.index + 1, TOTAL);
     els.progressText.textContent = "問題 " + shown + " / " + TOTAL;
     els.progressFill.style.width = (state.index / TOTAL * 100) + "%";
   }
 
   function renderQuestion() {
+    els.modeBanner.hidden = state.mode !== "review";
+    els.mainControls.hidden = state.mode === "review";
+
+    if (state.mode === "review") {
+      if (state.reviewIndex >= state.reviewQueue.length) {
+        showReviewSummary();
+        return;
+      }
+      els.reviewSummaryCard.hidden = true;
+      els.summaryCard.hidden = true;
+      els.quizCard.hidden = false;
+      showQuestionCard(currentQuestion());
+      return;
+    }
+
     if (state.index >= TOTAL) {
       showSummary();
       return;
     }
-    var q = QUESTIONS[state.index];
+    els.reviewSummaryCard.hidden = true;
+    els.summaryCard.hidden = true;
+    els.quizCard.hidden = false;
+    showQuestionCard(currentQuestion());
+  }
+
+  function showQuestionCard(q) {
     els.tag.textContent = "Q-" + String(q.id).padStart(3, "0");
     els.question.textContent = q.q;
     els.result.hidden = true;
@@ -88,12 +157,21 @@
     els.btnTrue.classList.remove("answer-btn--picked");
     els.btnFalse.classList.remove("answer-btn--picked");
     updateProgress();
-    els.quizCard.hidden = false;
-    els.summaryCard.hidden = true;
+  }
+
+  function recordAnswer(qid, picked, isCorrect) {
+    var prev = state.answeredIds[qid];
+    if (!prev) {
+      state.answered += 1;
+      if (isCorrect) state.correct += 1;
+    } else if (prev.correct !== isCorrect) {
+      state.correct += isCorrect ? 1 : -1;
+    }
+    state.answeredIds[qid] = { picked: picked, correct: isCorrect };
   }
 
   function handleAnswer(picked) {
-    var q = QUESTIONS[state.index];
+    var q = currentQuestion();
     var isCorrect = picked === q.answer;
 
     els.btnTrue.disabled = true;
@@ -105,19 +183,18 @@
     els.resultExp.textContent = q.exp || "(解説なし)";
     els.result.hidden = false;
 
-    if (!state.answeredIds[q.id]) {
-      state.answered += 1;
-      if (isCorrect) state.correct += 1;
-      state.answeredIds[q.id] = { picked: picked, correct: isCorrect };
-    }
+    recordAnswer(q.id, picked, isCorrect);
     updateGauge();
+    updateReviewButtons();
     saveState();
   }
 
   function next() {
-    state.index += 1;
-    if (state.index >= TOTAL) {
-      state.finished = true;
+    if (state.mode === "review") {
+      state.reviewIndex += 1;
+    } else {
+      state.index += 1;
+      if (state.index >= TOTAL) state.finished = true;
     }
     saveState();
     renderQuestion();
@@ -125,6 +202,7 @@
 
   function showSummary() {
     els.quizCard.hidden = true;
+    els.reviewSummaryCard.hidden = true;
     els.summaryCard.hidden = false;
     els.progressText.textContent = "問題 " + TOTAL + " / " + TOTAL;
     els.progressFill.style.width = "100%";
@@ -134,11 +212,47 @@
     els.summaryRate.textContent = "正答率 " + rate + "%";
   }
 
+  function showReviewSummary() {
+    els.quizCard.hidden = true;
+    els.summaryCard.hidden = true;
+    els.reviewSummaryCard.hidden = false;
+    els.progressText.textContent = "復習 " + state.reviewQueue.length + " / " + state.reviewQueue.length;
+    els.progressFill.style.width = "100%";
+    var remaining = countWrong();
+    els.reviewSummaryText.textContent = remaining > 0
+      ? "まだ " + remaining + " 問、間違えたままです。"
+      : "すべて正解できました！";
+    els.btnReviewAgain.hidden = remaining === 0;
+  }
+
+  function startReview() {
+    var ids = [];
+    for (var id in state.answeredIds) {
+      if (state.answeredIds.hasOwnProperty(id) && !state.answeredIds[id].correct) ids.push(id);
+    }
+    if (ids.length === 0) return;
+    state.mode = "review";
+    state.reviewQueue = ids;
+    state.reviewIndex = 0;
+    saveState();
+    renderQuestion();
+  }
+
+  function exitReview() {
+    state.mode = "normal";
+    saveState();
+    renderQuestion();
+  }
+
   function restart() {
     if (!confirm("最初から解き直します。よろしいですか？")) return;
-    state = { index: 0, correct: 0, answered: 0, answeredIds: {}, finished: false };
+    state = {
+      index: 0, correct: 0, answered: 0, answeredIds: {}, finished: false,
+      mode: "normal", reviewQueue: [], reviewIndex: 0
+    };
     saveState();
     updateGauge();
+    updateReviewButtons();
     renderQuestion();
   }
 
@@ -147,8 +261,14 @@
   els.btnNext.addEventListener("click", next);
   els.btnRestart.addEventListener("click", restart);
   els.btnReset.addEventListener("click", restart);
+  els.btnReviewWrong.addEventListener("click", startReview);
+  els.btnReviewFromSummary.addEventListener("click", startReview);
+  els.btnReviewAgain.addEventListener("click", startReview);
+  els.btnExitReview.addEventListener("click", exitReview);
+  els.btnExitReviewFromSummary.addEventListener("click", exitReview);
 
   loadState();
   updateGauge();
+  updateReviewButtons();
   renderQuestion();
 })();

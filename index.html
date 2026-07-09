@@ -39,6 +39,11 @@
 
 <main class="stage">
 
+  <div class="mode-banner" id="modeBanner" hidden>
+    復習モード：間違えた問題のみ出題中
+    <button class="text-btn" id="btnExitReview">通常モードに戻る</button>
+  </div>
+
   <div class="progress-rail" aria-hidden="true">
     <div class="progress-rail__fill" id="progressFill"></div>
   </div>
@@ -73,10 +78,22 @@
     <p class="summary__rate" id="summaryRate">正答率 0%</p>
     <div class="summary__actions">
       <button class="next-btn" id="btnRestart">最初からやり直す</button>
+      <button class="text-btn" id="btnReviewFromSummary">間違えた問題だけ復習する（<span id="summaryWrongCount">0</span>問）</button>
     </div>
   </div>
 
-  <div class="controls">
+  <div class="card card--summary" id="reviewSummaryCard" hidden>
+    <p class="card__tag">REVIEW</p>
+    <h2>復習完了</h2>
+    <p class="summary__rate" id="reviewSummaryText"></p>
+    <div class="summary__actions">
+      <button class="next-btn" id="btnReviewAgain">残りの苦手問題をもう一周</button>
+      <button class="text-btn" id="btnExitReviewFromSummary">通常モードに戻る</button>
+    </div>
+  </div>
+
+  <div class="controls" id="mainControls">
+    <button class="text-btn" id="btnReviewWrong">間違えた問題だけ復習する（<span id="wrongCount">0</span>問）</button>
     <button class="text-btn" id="btnReset">進捗をリセット</button>
   </div>
 

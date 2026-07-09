@@ -332,46 +332,96 @@ body {
 .summary__rate { color: var(--ink-soft); margin: 4px 0 18px; }
 .summary__actions { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 
-.controls { text-align: center; margin-top: 22px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-
-.savepoint {
+/* Utility panel (savepoint / review / reset) */
+.panel {
+  margin-top: 24px;
+  background: rgba(238,244,248,0.04);
+  border: 1px solid rgba(238,244,248,0.14);
+  border-radius: 10px;
+  padding: 18px 18px 16px;
+  display: flex;
+  flex-direction: column;
+}
+.panel__section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: rgba(238,244,248,0.75);
-  background: rgba(238,244,248,0.05);
-  border: 1px solid rgba(238,244,248,0.18);
-  border-radius: 6px;
-  padding: 10px 14px;
-  margin-bottom: 6px;
+  gap: 10px;
+  padding: 14px 0;
 }
-.savepoint__row {
+.panel__section:first-child { padding-top: 2px; }
+.panel__section:last-child { padding-bottom: 2px; }
+.panel__divider {
+  height: 1px;
+  background: rgba(238,244,248,0.12);
+}
+.panel__tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brass-light);
+  background: rgba(201,144,47,0.12);
+  border: 1px solid rgba(201,144,47,0.4);
+  padding: 3px 9px;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+}
+.panel__row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px 8px;
+  gap: 8px 10px;
 }
-.savepoint__label { white-space: nowrap; }
+.panel__hint {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: rgba(238,244,248,0.7);
+  white-space: nowrap;
+}
+.panel__status {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--brass-light);
+  margin: 0;
+}
 .savepoint__input {
   width: 58px;
   font-family: var(--font-mono);
-  font-size: 13px;
-  padding: 4px 6px;
+  font-size: 14px;
+  padding: 5px 6px;
   border-radius: 4px;
   border: 1px solid rgba(238,244,248,0.35);
   background: #fff;
   color: var(--ink);
   text-align: center;
 }
-.savepoint .text-btn { font-size: 13px; }
-.savepoint__current {
-  font-size: 12.5px;
+
+/* Chip button: elevated secondary action, shares brass language with card__tag / gauge */
+.chip-btn {
+  appearance: none;
+  border: 1px solid rgba(224,172,79,0.45);
+  background: rgba(201,144,47,0.14);
   color: var(--brass-light);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  cursor: pointer;
 }
+.chip-btn:hover:not(:disabled) { background: rgba(201,144,47,0.26); border-color: rgba(224,172,79,0.75); }
+.chip-btn:active:not(:disabled) { transform: translateY(1px); }
+.chip-btn:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+.chip-btn:disabled { opacity: 0.45; cursor: default; border-color: rgba(238,244,248,0.15); background: rgba(238,244,248,0.05); color: rgba(238,244,248,0.4); }
+.chip-btn--block { width: 100%; }
+.card--summary .chip-btn { background: rgba(201,144,47,0.08); color: var(--brass); border-color: rgba(201,144,47,0.4); }
+.card--summary .chip-btn:hover:not(:disabled) { background: rgba(201,144,47,0.16); }
+.card--summary .chip-btn:disabled { color: rgba(61,91,116,0.4); border-color: var(--line); background: transparent; }
+
+.text-btn.text-btn--danger { color: rgba(207,106,88,0.8); }
+.text-btn.text-btn--danger:hover { color: var(--rust-light); }
 
 /* Auto-save toast */
 .toast {

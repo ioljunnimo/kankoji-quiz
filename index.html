@@ -80,7 +80,7 @@
     <p class="summary__rate" id="summaryRate">正答率 0%</p>
     <div class="summary__actions">
       <button class="next-btn" id="btnRestart">最初からやり直す</button>
-      <button class="text-btn" id="btnReviewFromSummary">間違えた問題だけ復習する（<span id="summaryWrongCount">0</span>問）</button>
+      <button class="chip-btn" id="btnReviewFromSummary">間違えた問題だけ復習する（<span id="summaryWrongCount">0</span>問）</button>
     </div>
   </div>
 
@@ -94,21 +94,31 @@
     </div>
   </div>
 
-  <div class="controls" id="mainControls">
-    <div class="savepoint">
-      <div class="savepoint__row">
-        <span class="savepoint__label">セーブポイント：</span>
+  <div class="panel" id="mainControls">
+    <section class="panel__section">
+      <div class="panel__tag">セーブポイント</div>
+      <div class="panel__row">
         <input type="number" id="savepointInterval" class="savepoint__input" min="1" max="388" placeholder="-">
-        <span class="savepoint__label">問ごとに自動セーブ</span>
+        <span class="panel__hint">問ごとに自動セーブ</span>
       </div>
-      <div class="savepoint__row">
-        <button class="text-btn" id="btnSaveHere">ここでセーブ</button>
+      <div class="panel__row">
+        <button class="chip-btn" id="btnSaveHere">ここでセーブ</button>
         <button class="text-btn" id="btnClearSavepoint">解除</button>
       </div>
-      <div class="savepoint__current" id="savepointCurrent" hidden></div>
-    </div>
-    <button class="text-btn" id="btnReviewWrong">間違えた問題だけ復習する（<span id="wrongCount">0</span>問）</button>
-    <button class="text-btn" id="btnReset">進捗をリセット</button>
+      <p class="panel__status" id="savepointCurrent" hidden></p>
+    </section>
+
+    <div class="panel__divider" aria-hidden="true"></div>
+
+    <section class="panel__section">
+      <button class="chip-btn chip-btn--block" id="btnReviewWrong">間違えた問題だけ復習する（<span id="wrongCount">0</span>問）</button>
+    </section>
+
+    <div class="panel__divider" aria-hidden="true"></div>
+
+    <section class="panel__section">
+      <button class="text-btn text-btn--danger" id="btnReset">進捗をリセット</button>
+    </section>
   </div>
 
 </main>

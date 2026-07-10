@@ -89,8 +89,11 @@ window.startKankojiApp = function (uid) {
     btnSaveHere: document.getElementById("btnSaveHere"),
     btnClearSavepoint: document.getElementById("btnClearSavepoint"),
     saveToast: document.getElementById("saveToast"),
-    footerText: document.getElementById("footerText")
+    footerText: document.getElementById("footerText"),
+    questionStreak: document.getElementById("questionStreak")
   };
+
+  var STREAK_MASTERED = 10;
 
   els.savepointInterval.max = TOTAL;
   els.footerText.textContent = "全" + TOTAL + "問・○×形式 ／ 学習の進み具合はアカウントに自動保存されます";
@@ -247,6 +250,22 @@ window.startKankojiApp = function (uid) {
     els.btnTrue.classList.remove("answer-btn--picked");
     els.btnFalse.classList.remove("answer-btn--picked");
     updateProgress();
+    renderStreak(q.id);
+  }
+
+  function renderStreak(qid) {
+    var entry = state.answeredIds[qid];
+    var streak = entry ? (entry.streak || 0) : 0;
+    if (streak >= STREAK_MASTERED) {
+      els.questionStreak.textContent = "🌠";
+      els.questionStreak.hidden = false;
+    } else if (streak > 0) {
+      els.questionStreak.textContent = "★".repeat(streak);
+      els.questionStreak.hidden = false;
+    } else {
+      els.questionStreak.textContent = "";
+      els.questionStreak.hidden = true;
+    }
   }
 
   function recordAnswer(qid, picked, isCorrect) {
@@ -257,7 +276,9 @@ window.startKankojiApp = function (uid) {
     } else if (prev.correct !== isCorrect) {
       state.correct += isCorrect ? 1 : -1;
     }
-    state.answeredIds[qid] = { picked: picked, correct: isCorrect };
+    var prevStreak = prev ? (prev.streak || 0) : 0;
+    var streak = isCorrect ? prevStreak + 1 : Math.max(prevStreak - 1, 0);
+    state.answeredIds[qid] = { picked: picked, correct: isCorrect, streak: streak };
   }
 
   function handleAnswer(picked) {
@@ -274,6 +295,7 @@ window.startKankojiApp = function (uid) {
     els.result.hidden = false;
 
     recordAnswer(q.id, picked, isCorrect);
+    renderStreak(q.id);
     updateGauge();
     updateReviewButtons();
     saveState();

@@ -138,29 +138,6 @@ body {
   color: rgba(238,244,248,0.75);
 }
 
-/* Ad slots */
-.ad-slot {
-  position: relative;
-  z-index: 1;
-  max-width: 640px;
-  margin: 8px auto;
-  width: calc(100% - 40px);
-  min-height: 56px;
-  border: 1px dashed rgba(238,244,248,0.28);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(238,244,248,0.03);
-}
-.ad-slot__tag {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: rgba(238,244,248,0.6);
-  letter-spacing: 0.05em;
-}
-.ad-slot--bottom { margin-top: 20px; min-height: 50px; }
-
 /* Stage */
 .stage {
   position: relative;
@@ -192,6 +169,87 @@ body {
   color: rgba(238,244,248,0.75);
   margin: 6px 2px 18px;
 }
+
+/* User bar */
+.user-bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 20px 12px;
+}
+.user-bar__label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: rgba(238,244,248,0.75);
+}
+
+/* Auth gate */
+.auth-gate {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  max-width: 420px;
+  margin: 40px auto;
+  padding: 0 20px;
+  width: 100%;
+}
+.auth-card { text-align: left; }
+.auth-card h2 { margin: 0 0 18px; font-size: 20px; color: var(--ink); }
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.auth-field input {
+  font-family: var(--font-display);
+  font-size: 15px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  background: #fff;
+}
+.auth-field input:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+.auth-error {
+  color: var(--rust);
+  font-size: 13px;
+  background: rgba(184,80,62,0.1);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 0 0 14px;
+}
+#authToggleMode { display: block; text-align: center; width: 100%; margin-top: 14px; }
+
+/* Admin dashboard */
+.stage.stage--wide { max-width: 880px; }
+#statusCard { text-align: center; }
+#statusCard .chip-btn { margin-top: 14px; display: inline-block; text-decoration: none; }
+.admin-table-wrap { width: 100%; overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.admin-table th,
+.admin-table td {
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(238,244,248,0.12);
+  white-space: nowrap;
+}
+.admin-table th {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: rgba(238,244,248,0.6);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.admin-table td { color: rgba(238,244,248,0.9); }
+.admin-table tbody tr:last-child td { border-bottom: none; }
 
 .mode-banner {
   text-align: center;
@@ -461,9 +519,12 @@ body {
 }
 .text-btn:hover { color: #fff; }
 .text-btn:disabled { cursor: default; opacity: 0.5; text-decoration: none; }
-.card--summary .text-btn { color: var(--ink); }
-.card--summary .text-btn:hover { color: var(--navy); }
-.card--summary .text-btn:disabled { color: rgba(61,91,116,0.45); }
+.card--summary .text-btn,
+.auth-card .text-btn { color: var(--ink); }
+.card--summary .text-btn:hover,
+.auth-card .text-btn:hover { color: var(--navy); }
+.card--summary .text-btn:disabled,
+.auth-card .text-btn:disabled { color: rgba(61,91,116,0.45); }
 
 .footer {
   position: relative;
@@ -475,6 +536,6 @@ body {
 }
 
 @media (min-width: 640px) {
-  .topbar, .stage, .ad-slot { max-width: 640px; }
+  .topbar, .stage { max-width: 640px; }
   .card__question { font-size: 18px; }
 }

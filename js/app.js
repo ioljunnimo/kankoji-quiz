@@ -1,45 +1,53 @@
-(function () {
+window.startKankojiApp = function (uid) {
   "use strict";
 
-  var STORAGE_KEY = "kankoji1_quiz_progress_v1";
+  var progressRef = window.kankojiDb.collection("progress").doc(uid);
   var TOTAL = QUESTIONS.length;
 
   var QUESTIONS_BY_ID = {};
   QUESTIONS.forEach(function (q) { QUESTIONS_BY_ID[q.id] = q; });
 
-  var state = {
-    index: 0,
-    correct: 0,
-    answered: 0,
-    answeredIds: {},   // id -> {picked, correct}
-    finished: false,
-    mode: "normal",    // "normal" | "review"
-    reviewQueue: [],   // ids of wrong-answered questions, snapshot at review start
-    reviewIndex: 0,
-    savePoint: null,    // 1-indexed question number of the last saved checkpoint, or null if unset
-    saveInterval: null  // auto-save every N questions (e.g. 10 -> saves at Q10, Q20, Q30...), or null if off
-  };
+  function defaultState() {
+    return {
+      index: 0,
+      correct: 0,
+      answered: 0,
+      answeredIds: {},   // id -> {picked, correct}
+      finished: false,
+      mode: "normal",    // "normal" | "review"
+      reviewQueue: [],   // ids of wrong-answered questions, snapshot at review start
+      reviewIndex: 0,
+      savePoint: null,    // 1-indexed question number of the last saved checkpoint, or null if unset
+      saveInterval: null  // auto-save every N questions (e.g. 10 -> saves at Q10, Q20, Q30...), or null if off
+    };
+  }
+
+  var state = defaultState();
 
   function loadState() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      var saved = JSON.parse(raw);
-      if (saved && typeof saved.index === "number") {
-        state = saved;
-        if (state.mode !== "review") state.mode = "normal";
-        if (!Array.isArray(state.reviewQueue)) state.reviewQueue = [];
-        if (typeof state.reviewIndex !== "number") state.reviewIndex = 0;
-        if (typeof state.savePoint !== "number") state.savePoint = null;
-        if (typeof state.saveInterval !== "number") state.saveInterval = null;
-      }
-    } catch (e) { /* ignore corrupt storage */ }
+    return progressRef.get().then(function (doc) {
+      if (!doc.exists) return;
+      var saved = doc.data();
+      if (!saved || typeof saved.index !== "number") return;
+      state = saved;
+      if (state.mode !== "review") state.mode = "normal";
+      if (!Array.isArray(state.reviewQueue)) state.reviewQueue = [];
+      if (typeof state.reviewIndex !== "number") state.reviewIndex = 0;
+      if (typeof state.savePoint !== "number") state.savePoint = null;
+      if (typeof state.saveInterval !== "number") state.saveInterval = null;
+      if (!state.answeredIds) state.answeredIds = {};
+    }).catch(function (err) {
+      console.error("進捗の読み込みに失敗しました", err);
+    });
   }
 
   function saveState() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) { /* storage unavailable, fail silently */ }
+    var payload = Object.assign({}, state, {
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    progressRef.set(payload).catch(function (err) {
+      console.error("進捗の保存に失敗しました", err);
+    });
   }
 
   // Elements
@@ -85,7 +93,11 @@
   };
 
   els.savepointInterval.max = TOTAL;
-  els.footerText.textContent = "全" + TOTAL + "問・○×形式 ／ 学習の進み具合はこの端末に自動保存されます";
+  els.footerText.textContent = "全" + TOTAL + "問・○×形式 ／ 学習の進み具合はアカウントに自動保存されます";
+
+  // Block answering until the saved progress has finished loading from Firestore.
+  els.btnTrue.disabled = true;
+  els.btnFalse.disabled = true;
 
   var gaugeLen = els.gaugeFill.getTotalLength ? els.gaugeFill.getTotalLength() : 157;
   els.gaugeFill.style.strokeDasharray = gaugeLen;
@@ -363,10 +375,11 @@
     setSaveInterval(parseInt(els.savepointInterval.value, 10));
   });
 
-  loadState();
-  maybePromptSavepoint();
-  updateGauge();
-  updateReviewButtons();
-  updateSavepointUI();
-  renderQuestion();
-})();
+  loadState().then(function () {
+    maybePromptSavepoint();
+    updateGauge();
+    updateReviewButtons();
+    updateSavepointUI();
+    renderQuestion();
+  });
+};

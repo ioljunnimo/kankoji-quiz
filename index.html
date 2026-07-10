@@ -123,6 +123,17 @@
 
   <div class="panel" id="mainControls">
     <section class="panel__section">
+      <div class="panel__tag">開始位置</div>
+      <form class="panel__row" id="jumpToForm">
+        <input type="number" id="jumpToInput" class="savepoint__input" min="1" max="388" placeholder="-">
+        <span class="panel__hint">問目から始める</span>
+        <button type="submit" class="chip-btn">移動</button>
+      </form>
+    </section>
+
+    <div class="panel__divider" aria-hidden="true"></div>
+
+    <section class="panel__section">
       <div class="panel__tag">セーブポイント</div>
       <div class="panel__row">
         <input type="number" id="savepointInterval" class="savepoint__input" min="1" max="388" placeholder="-">

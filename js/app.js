@@ -90,11 +90,14 @@ window.startKankojiApp = function (uid) {
     btnClearSavepoint: document.getElementById("btnClearSavepoint"),
     saveToast: document.getElementById("saveToast"),
     footerText: document.getElementById("footerText"),
-    questionStreak: document.getElementById("questionStreak")
+    questionStreak: document.getElementById("questionStreak"),
+    jumpToForm: document.getElementById("jumpToForm"),
+    jumpToInput: document.getElementById("jumpToInput")
   };
 
   var STREAK_MASTERED = 10;
 
+  els.jumpToInput.max = TOTAL;
   els.savepointInterval.max = TOTAL;
   els.footerText.textContent = "全" + TOTAL + "問・○×形式 ／ 学習の進み具合はアカウントに自動保存されます";
 
@@ -194,6 +197,18 @@ window.startKankojiApp = function (uid) {
       state.finished = false;
       saveState();
     }
+  }
+
+  function jumpToQuestion(value) {
+    if (!value || value < 1) return;
+    var target = Math.min(Math.max(Math.round(value), 1), TOTAL);
+    state.mode = "normal";
+    state.index = target - 1;
+    state.finished = false;
+    els.jumpToInput.value = "";
+    saveState();
+    renderQuestion();
+    showToast("問題 " + target + " から開始しました");
   }
 
   function currentQuestion() {
@@ -373,6 +388,10 @@ window.startKankojiApp = function (uid) {
     renderQuestion();
   }
 
+  els.jumpToForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    jumpToQuestion(parseInt(els.jumpToInput.value, 10));
+  });
   els.btnTrue.addEventListener("click", function () { handleAnswer(true); });
   els.btnFalse.addEventListener("click", function () { handleAnswer(false); });
   els.btnNext.addEventListener("click", next);
